@@ -1,0 +1,42 @@
+name: qwiet.ai
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  NextGen-Static-Analysis:
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup Node.js v12.12.0 and npm
+      uses: actions/setup-node@v3
+      with:
+        node-version: '12.12.0'
+
+    - name: Download ShiftLeft CLI
+      shell: pwsh
+      run: |
+        Invoke-WebRequest -Uri 'https://cdn.shiftleft.io/download/sl-latest-windows-x64.zip' -OutFile sl-latest-windows-x64.zip
+        Expand-Archive -Path sl-latest-windows-x64.zip -DestinationPath .
+
+    - name: Print GitHub Environment Variables
+      shell: pwsh
+      run: |
+        Write-Host "GITHUB_REPOSITORY: $env:GITHUB_REPOSITORY"
+        Write-Host "GITHUB_SHA: $env:GITHUB_SHA"
+        Write-Host "GITHUB_REF: $env:GITHUB_REF"
+        Write-Host "GITHUB_ACTOR: $env:GITHUB_ACTOR"
+
+    - name: preZero Static Analysis
+      shell: pwsh
+      run: |
+        pip install -r requirements.txt
+        & "${env:GITHUB_WORKSPACE}\sl-windows-x64\sl.exe" analyze --verbose --strict --wait
+      env:
+        SHIFTLEFT_ACCESS_TOKEN: ${{ secrets.SHIFTLEFT_ACCESS_TOKEN }}
+        SHIFTLEFT_API_HOST: www.shiftleft.io
+        SHIFTLEFT_GRPC_TELEMETRY_HOST: telemetry.shiftleft.io:443
+        SHIFTLEFT_GRPC_API_HOST: api.shiftleft.io:443
