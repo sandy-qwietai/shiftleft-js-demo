@@ -1,0 +1,57 @@
+name: Qwiet AI Static Analysis
+
+on:
+  pull_request:
+  workflow_dispatch:
+  push:
+
+jobs:
+  NextGen-Static-Analysis:
+    permissions:
+      contents: read # Required for actions/checkout to fetch code
+      security-events: write # Required for github/codeql-action/upload-sarif to upload SARIF results
+      actions: read # Needed in private repositories for github/codeql-action/upload-sarif
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository  # This is necessary to access your code
+        uses: actions/checkout@v3
+
+      # --- Setup Development Environment (Modify as needed) ---
+      # Uncomment and customize based on the language of your project
+
+      # - name: Setup Python
+      #   uses: actions/setup-python@v4
+      #   with:
+      #     python-version: '3.x'
+      # - name: Install Python dependencies
+      #   run: pip install -r requirements.txt
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install Node.js dependencies
+        run: npm install
+
+      # - name: Setup Java
+      #   uses: actions/setup-java@v3
+      #   with:
+      #     distribution: 'temurin'
+      #     java-version: '17'
+      # - name: Build Java project
+      #   run: mvn clean install
+
+      # - name: Setup .NET
+      #   uses: actions/setup-dotnet@v3
+      #   with:
+      #     dotnet-version: '6.0.x'
+      # - name: Restore .NET dependencies
+      #   run: dotnet restore
+
+      - name: Run Qwiet AI Scan
+        uses: sandy-qwietai/qwietai-actions@main
+        # Uncomment the below block to disable sarif report generation and upload
+        # with:                                  
+        #   enable_sarif: "false"
+        env:
+          SHIFTLEFT_ACCESS_TOKEN: ${{ secrets.SHIFTLEFT_ACCESS_TOKEN }}
